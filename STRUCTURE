@@ -1,0 +1,7 @@
+############################
+#structure analyses
+############################
+##all structure analyses were done with outfiles from denovo ipyrad assemblies
+
+##structure: V. lautum and V. jucundum samples k=2 and k=3 (for figure 2f, left side, and supplemental figures 7a and 7b, left side)
+#sample list: MKM01_teop.fastq.gz	MKM09_teop.fastq.gz	MKM13_huit.fastq.gz	MKM16_huit.fastq.gz	MKM20_huit.fastq.gz	MKM25_moxv.fastq.gz	MKM02_teop.fastq.gz	MKM11_yale.fastq.gz	MKM14_huit.fastq.gz	MKM17_huit.fastq.gz	MKM23_moxv.fastq.gz	MKM26_moxv.fastq.gz	MKM03_teop.fastq.gz	MKM12_huit.fastq.gz	MKM15_huit.fastq.gz	MKM18_huit.fastq.gz	MKM24_moxv.fastq.gz
