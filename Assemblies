@@ -1,0 +1,265 @@
+############################
+#ipyrad assemblies
+############################
+###reference guided assembly: RAD-seq reads aligned to V. lautum genome by ipyrad 
+
+#reference guided assembly: V. lautum, V. jucundum, and V. hartwegii samples
+#sample list: MKM01_teop.fastq.gz	MKM09_teop.fastq.gz	MKM13_huit.fastq.gz	MKM16_huit.fastq.gz	MKM20_huit.fastq.gz	MKM25_moxv.fastq.gz	PWS3190_hart.fastq.gz MKM02_teop.fastq.gz	MKM11_yale.fastq.gz	MKM14_huit.fastq.gz	MKM17_huit.fastq.gz	MKM23_moxv.fastq.gz	MKM26_moxv.fastq.gz	PWS3193_hart.fastq.gz MKM03_teop.fastq.gz	MKM12_huit.fastq.gz	MKM15_huit.fastq.gz	MKM18_huit.fastq.gz	MKM24_moxv.fastq.gz	PWS3186_hart.fastq.gz
+
+
+#parameters file: params-hartout_parent.txt
+------- ipyrad params file (v.0.9.15)-------------------------------------------
+hartout_parent                  ## [0] [assembly_name]: Assembly name. Used to name output directories for assembly steps
+/home/mm3465/scratch60/ipyrad/ipyrad_hartout_parent ## [1] [project_dir]: Project dir (made in curdir if not present)
+                               ## [2] [raw_fastq_path]: Location of raw non-demultiplexed fastq files
+                               ## [3] [barcodes_path]: Location of barcodes file
+/home/mm3465/scratch60/ipyrad/seq_hartout_parent/*.fastq.gz                               ## [4] [sorted_fastq_path]: Location of demultiplexed/sorted fastq files
+reference                         ## [5] [assembly_method]: Assembly method (denovo, reference)
+/home/mm3465/scratch60/ipyrad/seq_scaffolds/final_assembly.fa                               ## [6] [reference_sequence]: Location of reference sequence file
+rad                            ## [7] [datatype]: Datatype (see docs): rad, gbs, ddrad, etc.
+TGCAG,                         ## [8] [restriction_overhang]: Restriction overhang (cut1,) or (cut1, cut2)
+5                              ## [9] [max_low_qual_bases]: Max low quality base calls (Q<20) in a read
+33                             ## [10] [phred_Qscore_offset]: phred Q score offset (33 is default and very standard)
+6                              ## [11] [mindepth_statistical]: Min depth for statistical base calling
+6                              ## [12] [mindepth_majrule]: Min depth for majority-rule base calling
+10000                          ## [13] [maxdepth]: Max cluster depth within samples
+0.9                           ## [14] [clust_threshold]: Clustering threshold for de novo assembly
+0                              ## [15] [max_barcode_mismatch]: Max number of allowable mismatches in barcodes
+0                              ## [16] [filter_adapters]: Filter for adapters/primers (1 or 2=stricter)
+35                             ## [17] [filter_min_trim_len]: Min length of reads after adapter trim
+4                              ## [18] [max_alleles_consens]: Max alleles per site in consensus sequences
+0.05                           ## [19] [max_Ns_consens]: Max N's (uncalled bases) in consensus (R1, R2)
+0.05                           ## [20] [max_Hs_consens]: Max Hs (heterozygotes) in consensus (R1, R2)
+4                              ## [21] [min_samples_locus]: Min # samples per locus for output
+0.2                            ## [22] [max_SNPs_locus]: Max # SNPs per locus (R1, R2)
+8                              ## [23] [max_Indels_locus]: Max # of indels per locus (R1, R2)
+0.5                            ## [24] [max_shared_Hs_locus]: Max # heterozygous sites per locus
+0, 0, 0, 0                     ## [25] [trim_reads]: Trim raw read edges (R1>, <R1, R2>, <R2) (see docs)
+0, 0, 0, 0                     ## [26] [trim_loci]: Trim locus edges (see docs) (R1>, <R1, R2>, <R2)
+*                        ## [27] [output_formats]: Output formats (see docs)
+                               ## [28] [pop_assign_file]: Path to population assignment file
+                               ## [29] [reference_as_filter]: Reads mapped to this reference are removed in step 3
+
+
+#run ipyrad: slurm_ipyrad_hartout_parent.sbatch
+#!/bin/bash
+#SBATCH --partition pi_edwards
+#SBATCH --ntasks 1
+#SBATCH --mem-per-cpu 100G 
+#SBATCH --time 12:00:00
+#SBATCH --job-name hartout_parent
+#SBATCH --output hartout_parent_output.txt
+
+module load miniconda
+source activate ipyrad_4_2021
+
+## call ipyrad on your params file
+ipyrad -p params-hartout_parent2.txt -s 1234567
+
+
+#referenced guided assembly: hybrid swarm samples
+#sample list: YA03.fastq.gz	YA18.fastq.gz	YA33.fastq.gz	YB10.fastq.gz	YD10.fastq.gz	Z008.fastq.gz	Z021.fastq.gz	Z036.fastq.gz	Z048.fastq.gz	Z060.fastq.gz	Z073.fastq.gz	Z085.fastq.gz YA06.fastq.gz	YA19.fastq.gz	YA37.fastq.gz	YB11.fastq.gz	YD11.fastq.gz	Z010.fastq.gz	Z023.fastq.gz	Z037.fastq.gz	Z050.fastq.gz	Z061.fastq.gz	Z074.fastq.gz	Z086.fastq.gz	YA07.fastq.gz	YA21.fastq.gz	YA38.fastq.gz	YC01.fastq.gz	YD13.fastq.gz	Z011.fastq.gz	Z024.fastq.gz	Z040.fastq.gz	Z051.fastq.gz	Z062.fastq.gz	Z076.fastq.gz	Z089.fastq.gz	YA10.fastq.gz	YA22.fastq.gz	YA41.fastq.gz	YC04.fastq.gz	YD16.fastq.gz	Z013.fastq.gz	Z026.fastq.gz	Z041.fastq.gz	Z052.fastq.gz	Z063.fastq.gz	Z078.fastq.gz	Z090.fastq.gz	YA11.fastq.gz	YA23.fastq.gz	YB01.fastq.gz	YC05.fastq.gz	YD18.fastq.gz	Z014.fastq.gz	Z027.fastq.gz	Z042.fastq.gz	Z053.fastq.gz	Z064.fastq.gz	Z079.fastq.gz	Z093.fastq.gz	YA12.fastq.gz	YA24.fastq.gz	YB03.fastq.gz	YD01.fastq.gz	Z001.fastq.gz	Z016.fastq.gz	Z028.fastq.gz	Z043.fastq.gz	Z054.fastq.gz	Z065.fastq.gz	Z080.fastq.gz	Z094.fastq.gz	YA13.fastq.gz	YA25.fastq.gz	YB04.fastq.gz	YD03.fastq.gz	Z003.fastq.gz	Z017.fastq.gz	Z029.fastq.gz	Z044.fastq.gz	Z055.fastq.gz	Z068.fastq.gz	Z081.fastq.gz	Z095.fastq.gz	YA14.fastq.gz	YA26.fastq.gz	YB05.fastq.gz	YD04.fastq.gz	Z004.fastq.gz	Z018.fastq.gz	Z030.fastq.gz	Z045.fastq.gz	Z056.fastq.gz	Z069.fastq.gz	Z082.fastq.gz	Z096.fastq.gz	YA15.fastq.gz	YA29.fastq.gz	YB07.fastq.gz	YD05.fastq.gz	Z005.fastq.gz	Z019.fastq.gz	Z031.fastq.gz	Z046.fastq.gz	Z058.fastq.gz	Z071.fastq.gz	Z083.fastq.gz	Z097.fastq.gz	YA17.fastq.gz	YA32.fastq.gz	YB09.fastq.gz	YD08.fastq.gz	Z006.fastq.gz	Z020.fastq.gz	Z032.fastq.gz	Z047.fastq.gz	Z059.fastq.gz	Z072.fastq.gz	Z084.fastq.gz
+
+#parameters file: params-hybrid.txt
+------- ipyrad params file (v.0.9.15)-------------------------------------------
+hybrids                  ## [0] [assembly_name]: Assembly name. Used to name output directories for assembly steps
+/home/mm3465/scratch60/ipyrad/ipyrad_hybrid ## [1] [project_dir]: Project dir (made in curdir if not present)
+                               ## [2] [raw_fastq_path]: Location of raw non-demultiplexed fastq files
+                               ## [3] [barcodes_path]: Location of barcodes file
+/home/mm3465/scratch60/ipyrad/seq_hybrid/*.fastq.gz                               ## [4] [sorted_fastq_path]: Location of demultiplexed/sorted fastq files
+reference                         ## [5] [assembly_method]: Assembly method (denovo, reference)
+/home/mm3465/scratch60/ipyrad/seq_scaffolds/final_assembly.fa                               ## [6] [reference_sequence]: Location of reference sequence file
+rad                            ## [7] [datatype]: Datatype (see docs): rad, gbs, ddrad, etc.
+TGCAG,                         ## [8] [restriction_overhang]: Restriction overhang (cut1,) or (cut1, cut2)
+5                              ## [9] [max_low_qual_bases]: Max low quality base calls (Q<20) in a read
+33                             ## [10] [phred_Qscore_offset]: phred Q score offset (33 is default and very standard)
+6                              ## [11] [mindepth_statistical]: Min depth for statistical base calling
+6                              ## [12] [mindepth_majrule]: Min depth for majority-rule base calling
+10000                          ## [13] [maxdepth]: Max cluster depth within samples
+0.9                           ## [14] [clust_threshold]: Clustering threshold for de novo assembly
+0                              ## [15] [max_barcode_mismatch]: Max number of allowable mismatches in barcodes
+0                              ## [16] [filter_adapters]: Filter for adapters/primers (1 or 2=stricter)
+35                             ## [17] [filter_min_trim_len]: Min length of reads after adapter trim
+4                              ## [18] [max_alleles_consens]: Max alleles per site in consensus sequences
+0.05                           ## [19] [max_Ns_consens]: Max N's (uncalled bases) in consensus (R1, R2)
+0.05                           ## [20] [max_Hs_consens]: Max Hs (heterozygotes) in consensus (R1, R2)
+4                              ## [21] [min_samples_locus]: Min # samples per locus for output
+0.2                            ## [22] [max_SNPs_locus]: Max # SNPs per locus (R1, R2)
+8                              ## [23] [max_Indels_locus]: Max # of indels per locus (R1, R2)
+0.5                            ## [24] [max_shared_Hs_locus]: Max # heterozygous sites per locus
+0, 0, 0, 0                     ## [25] [trim_reads]: Trim raw read edges (R1>, <R1, R2>, <R2) (see docs)
+0, 0, 0, 0                     ## [26] [trim_loci]: Trim locus edges (see docs) (R1>, <R1, R2>, <R2)
+*                        ## [27] [output_formats]: Output formats (see docs)
+                               ## [28] [pop_assign_file]: Path to population assignment file
+                               ## [29] [reference_as_filter]: Reads mapped to this reference are removed in step 3
+
+#run ipyrad: slurm_ipyrad_hybrid.sbatch
+#!/bin/bash
+#SBATCH --partition pi_edwards
+#SBATCH --ntasks 15
+#SBATCH --mem-per-cpu 10G 
+#SBATCH --time 1-00:00:00
+#SBATCH --job-name hybrid
+#SBATCH --output hybrid_output.txt
+
+module load miniconda
+source activate ipyrad_10_2019
+
+## call ipyrad on your params file
+ipyrad -p params-hybrid.txt -s 1234567
+
+
+###denovo assembly: RAD-seq reads aligned across samples 
+
+#denovo assembly: V. lautum and V. jucundum samples
+#sample list: MKM01_teop.fastq.gz	MKM09_teop.fastq.gz	MKM13_huit.fastq.gz	MKM16_huit.fastq.gz	MKM20_huit.fastq.gz	MKM25_moxv.fastq.gz	MKM02_teop.fastq.gz	MKM11_yale.fastq.gz	MKM14_huit.fastq.gz	MKM17_huit.fastq.gz	MKM23_moxv.fastq.gz	MKM26_moxv.fastq.gz	MKM03_teop.fastq.gz	MKM12_huit.fastq.gz	MKM15_huit.fastq.gz	MKM18_huit.fastq.gz	MKM24_moxv.fastq.gz
+
+#parameters file: params-parent.txt
+------- ipyrad params file (v.0.9.15)-------------------------------------------
+parent                  ## [0] [assembly_name]: Assembly name. Used to name output directories for assembly steps
+/home/mm3465/scratch60/ipyrad/ipyrad_denovo_parent ## [1] [project_dir]: Project dir (made in curdir if not present)
+                               ## [2] [raw_fastq_path]: Location of raw non-demultiplexed fastq files
+                               ## [3] [barcodes_path]: Location of barcodes file
+/home/mm3465/scratch60/ipyrad/seq_parent/*.fastq.gz                               ## [4] [sorted_fastq_path]: Location of demultiplexed/sorted fastq files
+denovo                         ## [5] [assembly_method]: Assembly method (denovo, reference)
+                               ## [6] [reference_sequence]: Location of reference sequence file
+rad                            ## [7] [datatype]: Datatype (see docs): rad, gbs, ddrad, etc.
+TGCAG,                         ## [8] [restriction_overhang]: Restriction overhang (cut1,) or (cut1, cut2)
+5                              ## [9] [max_low_qual_bases]: Max low quality base calls (Q<20) in a read
+33                             ## [10] [phred_Qscore_offset]: phred Q score offset (33 is default and very standard)
+6                              ## [11] [mindepth_statistical]: Min depth for statistical base calling
+6                              ## [12] [mindepth_majrule]: Min depth for majority-rule base calling
+10000                          ## [13] [maxdepth]: Max cluster depth within samples
+0.9                           ## [14] [clust_threshold]: Clustering threshold for de novo assembly
+0                              ## [15] [max_barcode_mismatch]: Max number of allowable mismatches in barcodes
+0                              ## [16] [filter_adapters]: Filter for adapters/primers (1 or 2=stricter)
+35                             ## [17] [filter_min_trim_len]: Min length of reads after adapter trim
+4                              ## [18] [max_alleles_consens]: Max alleles per site in consensus sequences
+0.05                           ## [19] [max_Ns_consens]: Max N's (uncalled bases) in consensus (R1, R2)
+0.05                           ## [20] [max_Hs_consens]: Max Hs (heterozygotes) in consensus (R1, R2)
+4                              ## [21] [min_samples_locus]: Min # samples per locus for output
+0.2                            ## [22] [max_SNPs_locus]: Max # SNPs per locus (R1, R2)
+8                              ## [23] [max_Indels_locus]: Max # of indels per locus (R1, R2)
+0.5                            ## [24] [max_shared_Hs_locus]: Max # heterozygous sites per locus
+0, 0, 0, 0                     ## [25] [trim_reads]: Trim raw read edges (R1>, <R1, R2>, <R2) (see docs)
+0, 0, 0, 0                     ## [26] [trim_loci]: Trim locus edges (see docs) (R1>, <R1, R2>, <R2)
+*                        ## [27] [output_formats]: Output formats (see docs)
+                               ## [28] [pop_assign_file]: Path to population assignment file
+                               ## [29] [reference_as_filter]: Reads mapped to this reference are removed in step 3
+
+#run ipyrad: slurm_ipyrad_parent.sbatch
+#!/bin/bash
+#SBATCH --partition pi_edwards
+#SBATCH --ntasks 15
+#SBATCH --mem-per-cpu 10G 
+#SBATCH --time 1-00:00:00
+#SBATCH --job-name parent
+#SBATCH --output parent_output.txt
+
+module load miniconda
+source activate ipyrad_10_2019
+
+## call ipyrad on your params file
+ipyrad -p params-parent.txt -s 1234567
+
+#denovo assembly: V. lautum, V. jucundum, and V. hartwegii samples
+#sample list: MKM01_teop.fastq.gz	MKM09_teop.fastq.gz	MKM13_huit.fastq.gz	MKM16_huit.fastq.gz	MKM20_huit.fastq.gz	MKM25_moxv.fastq.gz	PWS3190_hart.fastq.gz MKM02_teop.fastq.gz	MKM11_yale.fastq.gz	MKM14_huit.fastq.gz	MKM17_huit.fastq.gz	MKM23_moxv.fastq.gz	MKM26_moxv.fastq.gz	PWS3193_hart.fastq.gz MKM03_teop.fastq.gz	MKM12_huit.fastq.gz	MKM15_huit.fastq.gz	MKM18_huit.fastq.gz	MKM24_moxv.fastq.gz	PWS3186_hart.fastq.gz
+
+#parameters file: params-hartout.txt
+------- ipyrad params file (v.0.9.15)-------------------------------------------
+hartout                  ## [0] [assembly_name]: Assembly name. Used to name output directories for assembly steps
+/home/mm3465/scratch60/ipyrad/ipyrad_denovo_hartout ## [1] [project_dir]: Project dir (made in curdir if not present)
+                               ## [2] [raw_fastq_path]: Location of raw non-demultiplexed fastq files
+                               ## [3] [barcodes_path]: Location of barcodes file
+/home/mm3465/scratch60/ipyrad/seq_hartout_parent/*.fastq.gz                               ## [4] [sorted_fastq_path]: Location of demultiplexed/sorted fastq files
+denovo                         ## [5] [assembly_method]: Assembly method (denovo, reference)
+                               ## [6] [reference_sequence]: Location of reference sequence file
+rad                            ## [7] [datatype]: Datatype (see docs): rad, gbs, ddrad, etc.
+TGCAG,                         ## [8] [restriction_overhang]: Restriction overhang (cut1,) or (cut1, cut2)
+5                              ## [9] [max_low_qual_bases]: Max low quality base calls (Q<20) in a read
+33                             ## [10] [phred_Qscore_offset]: phred Q score offset (33 is default and very standard)
+6                              ## [11] [mindepth_statistical]: Min depth for statistical base calling
+6                              ## [12] [mindepth_majrule]: Min depth for majority-rule base calling
+10000                          ## [13] [maxdepth]: Max cluster depth within samples
+0.9                           ## [14] [clust_threshold]: Clustering threshold for de novo assembly
+0                              ## [15] [max_barcode_mismatch]: Max number of allowable mismatches in barcodes
+0                              ## [16] [filter_adapters]: Filter for adapters/primers (1 or 2=stricter)
+35                             ## [17] [filter_min_trim_len]: Min length of reads after adapter trim
+4                              ## [18] [max_alleles_consens]: Max alleles per site in consensus sequences
+0.05                           ## [19] [max_Ns_consens]: Max N's (uncalled bases) in consensus (R1, R2)
+0.05                           ## [20] [max_Hs_consens]: Max Hs (heterozygotes) in consensus (R1, R2)
+4                              ## [21] [min_samples_locus]: Min # samples per locus for output
+0.2                            ## [22] [max_SNPs_locus]: Max # SNPs per locus (R1, R2)
+8                              ## [23] [max_Indels_locus]: Max # of indels per locus (R1, R2)
+0.5                            ## [24] [max_shared_Hs_locus]: Max # heterozygous sites per locus
+0, 0, 0, 0                     ## [25] [trim_reads]: Trim raw read edges (R1>, <R1, R2>, <R2) (see docs)
+0, 0, 0, 0                     ## [26] [trim_loci]: Trim locus edges (see docs) (R1>, <R1, R2>, <R2)
+*                        ## [27] [output_formats]: Output formats (see docs)
+                               ## [28] [pop_assign_file]: Path to population assignment file
+                               ## [29] [reference_as_filter]: Reads mapped to this reference are removed in step 3
+
+#run ipyrad: slurm_ipyrad_hartout.sbatch
+#!/bin/bash
+#SBATCH --partition pi_edwards
+#SBATCH --ntasks 15
+#SBATCH --mem-per-cpu 10G 
+#SBATCH --time 1-00:00:00
+#SBATCH --job-name hartout
+#SBATCH --output hartout_output.txt
+
+module load miniconda
+source activate ipyrad_10_2019
+
+## call ipyrad on your params file
+ipyrad -p params-hartout.txt -s 1234567
+
+#denovo assembly: hybrid swarm samples
+#sample list: YA03.fastq.gz	YA18.fastq.gz	YA33.fastq.gz	YB10.fastq.gz	YD10.fastq.gz	Z008.fastq.gz	Z021.fastq.gz	Z036.fastq.gz	Z048.fastq.gz	Z060.fastq.gz	Z073.fastq.gz	Z085.fastq.gz YA06.fastq.gz	YA19.fastq.gz	YA37.fastq.gz	YB11.fastq.gz	YD11.fastq.gz	Z010.fastq.gz	Z023.fastq.gz	Z037.fastq.gz	Z050.fastq.gz	Z061.fastq.gz	Z074.fastq.gz	Z086.fastq.gz	YA07.fastq.gz	YA21.fastq.gz	YA38.fastq.gz	YC01.fastq.gz	YD13.fastq.gz	Z011.fastq.gz	Z024.fastq.gz	Z040.fastq.gz	Z051.fastq.gz	Z062.fastq.gz	Z076.fastq.gz	Z089.fastq.gz	YA10.fastq.gz	YA22.fastq.gz	YA41.fastq.gz	YC04.fastq.gz	YD16.fastq.gz	Z013.fastq.gz	Z026.fastq.gz	Z041.fastq.gz	Z052.fastq.gz	Z063.fastq.gz	Z078.fastq.gz	Z090.fastq.gz	YA11.fastq.gz	YA23.fastq.gz	YB01.fastq.gz	YC05.fastq.gz	YD18.fastq.gz	Z014.fastq.gz	Z027.fastq.gz	Z042.fastq.gz	Z053.fastq.gz	Z064.fastq.gz	Z079.fastq.gz	Z093.fastq.gz	YA12.fastq.gz	YA24.fastq.gz	YB03.fastq.gz	YD01.fastq.gz	Z001.fastq.gz	Z016.fastq.gz	Z028.fastq.gz	Z043.fastq.gz	Z054.fastq.gz	Z065.fastq.gz	Z080.fastq.gz	Z094.fastq.gz	YA13.fastq.gz	YA25.fastq.gz	YB04.fastq.gz	YD03.fastq.gz	Z003.fastq.gz	Z017.fastq.gz	Z029.fastq.gz	Z044.fastq.gz	Z055.fastq.gz	Z068.fastq.gz	Z081.fastq.gz	Z095.fastq.gz	YA14.fastq.gz	YA26.fastq.gz	YB05.fastq.gz	YD04.fastq.gz	Z004.fastq.gz	Z018.fastq.gz	Z030.fastq.gz	Z045.fastq.gz	Z056.fastq.gz	Z069.fastq.gz	Z082.fastq.gz	Z096.fastq.gz	YA15.fastq.gz	YA29.fastq.gz	YB07.fastq.gz	YD05.fastq.gz	Z005.fastq.gz	Z019.fastq.gz	Z031.fastq.gz	Z046.fastq.gz	Z058.fastq.gz	Z071.fastq.gz	Z083.fastq.gz	Z097.fastq.gz	YA17.fastq.gz	YA32.fastq.gz	YB09.fastq.gz	YD08.fastq.gz	Z006.fastq.gz	Z020.fastq.gz	Z032.fastq.gz	Z047.fastq.gz	Z059.fastq.gz	Z072.fastq.gz	Z084.fastq.gz
+
+#parameters file: params-hybrid.txt
+------- ipyrad params file (v.0.9.15)-------------------------------------------
+hybrids                  ## [0] [assembly_name]: Assembly name. Used to name output directories for assembly steps
+/home/mm3465/scratch60/ipyrad/ipyrad_denovo_hybrid ## [1] [project_dir]: Project dir (made in curdir if not present)
+                               ## [2] [raw_fastq_path]: Location of raw non-demultiplexed fastq files
+                               ## [3] [barcodes_path]: Location of barcodes file
+/home/mm3465/scratch60/ipyrad/seq_hybrid/*.fastq.gz                               ## [4] [sorted_fastq_path]: Location of demultiplexed/sorted fastq files
+denovo                         ## [5] [assembly_method]: Assembly method (denovo, reference)
+                               ## [6] [reference_sequence]: Location of reference sequence file
+rad                            ## [7] [datatype]: Datatype (see docs): rad, gbs, ddrad, etc.
+TGCAG,                         ## [8] [restriction_overhang]: Restriction overhang (cut1,) or (cut1, cut2)
+5                              ## [9] [max_low_qual_bases]: Max low quality base calls (Q<20) in a read
+33                             ## [10] [phred_Qscore_offset]: phred Q score offset (33 is default and very standard)
+6                              ## [11] [mindepth_statistical]: Min depth for statistical base calling
+6                              ## [12] [mindepth_majrule]: Min depth for majority-rule base calling
+10000                          ## [13] [maxdepth]: Max cluster depth within samples
+0.9                           ## [14] [clust_threshold]: Clustering threshold for de novo assembly
+0                              ## [15] [max_barcode_mismatch]: Max number of allowable mismatches in barcodes
+0                              ## [16] [filter_adapters]: Filter for adapters/primers (1 or 2=stricter)
+35                             ## [17] [filter_min_trim_len]: Min length of reads after adapter trim
+4                              ## [18] [max_alleles_consens]: Max alleles per site in consensus sequences
+0.05                           ## [19] [max_Ns_consens]: Max N's (uncalled bases) in consensus (R1, R2)
+0.05                           ## [20] [max_Hs_consens]: Max Hs (heterozygotes) in consensus (R1, R2)
+4                              ## [21] [min_samples_locus]: Min # samples per locus for output
+0.2                            ## [22] [max_SNPs_locus]: Max # SNPs per locus (R1, R2)
+8                              ## [23] [max_Indels_locus]: Max # of indels per locus (R1, R2)
+0.5                            ## [24] [max_shared_Hs_locus]: Max # heterozygous sites per locus
+0, 0, 0, 0                     ## [25] [trim_reads]: Trim raw read edges (R1>, <R1, R2>, <R2) (see docs)
+0, 0, 0, 0                     ## [26] [trim_loci]: Trim locus edges (see docs) (R1>, <R1, R2>, <R2)
+*                        ## [27] [output_formats]: Output formats (see docs)
+                               ## [28] [pop_assign_file]: Path to population assignment file
+                               ## [29] [reference_as_filter]: Reads mapped to this reference are removed in step 3
+
+#run ipyrad: slurm_ipyrad_hybrid.sbatch
+#!/bin/bash
+#SBATCH --partition pi_edwards
+#SBATCH --ntasks 15
+#SBATCH --mem-per-cpu 10G 
+#SBATCH --time 24:00:00
+#SBATCH --job-name hybrid
+#SBATCH --output hybrid_output.txt
+
+module load miniconda
+source activate ipyrad_10_2019
+
+## call ipyrad on your params file
+ipyrad -p params-hybrid.txt -s 1234567
