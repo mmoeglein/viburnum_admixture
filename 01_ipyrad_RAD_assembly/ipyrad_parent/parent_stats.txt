@@ -1,0 +1,121 @@
+
+## The number of loci caught by each filter.
+## ipyrad API location: [assembly].stats_dfs.s7_filters
+
+                            total_filters  applied_order  retained_loci
+total_prefiltered_loci                  0              0         206255
+filtered_by_rm_duplicates               0              0         206255
+filtered_by_max_indels                  0              0         206255
+filtered_by_max_SNPs                    9              9         206246
+filtered_by_max_shared_het           1229           1229         205017
+filtered_by_min_sample              61228          61228         143789
+total_filtered_loci                 62466          62466         143789
+
+
+## The number of loci recovered for each Sample.
+## ipyrad API location: [assembly].stats_dfs.s7_samples
+
+           sample_coverage
+reference           143789
+MKM_1                85871
+MKM_11               76582
+MKM_12              106064
+MKM_13               32131
+MKM_14               11503
+MKM_15               49315
+MKM_16               38670
+MKM_17               20764
+MKM_18               70732
+MKM_2                60423
+MKM_20              122039
+MKM_23               24758
+MKM_24               57272
+MKM_25               22352
+MKM_26               39517
+MKM_3                17017
+MKM_9                13567
+
+
+## The number of loci for which N taxa have data.
+## ipyrad API location: [assembly].stats_dfs.s7_loci
+
+    locus_coverage  sum_coverage
+1                0             0
+2                0             0
+3                0             0
+4            20603         20603
+5            23285         43888
+6            25255         69143
+7            23439         92582
+8            19412        111994
+9            13653        125647
+10            8662        134309
+11            4851        139160
+12            2494        141654
+13            1206        142860
+14             467        143327
+15             154        143481
+16              62        143543
+17             102        143645
+18             144        143789
+
+
+The distribution of SNPs (var and pis) per locus.
+## var = Number of loci with n variable sites (pis + autapomorphies)
+## pis = Number of loci with n parsimony informative site (minor allele in >1 sample)
+## ipyrad API location: [assembly].stats_dfs.s7_snps
+## The "reference" sample is included if present unless 'exclude_reference=True'
+
+      var  sum_var    pis  sum_pis
+0   48981        0  89180        0
+1   38968    38968  29942    29942
+2   22379    83726  11639    53220
+3   12682   121772   6154    71682
+4    7952   153580   3676    86386
+5    5009   178625   1693    94851
+6    3114   197309    785    99561
+7    1923   210770    383   102242
+8    1154   220002    169   103594
+9     676   226086    104   104530
+10    417   230256     37   104900
+11    231   232797     21   105131
+12    126   234309      2   105155
+13     67   235180      2   105181
+14     44   235796      0   105181
+15     24   236156      1   105196
+16     13   236364      0   105196
+17      9   236517      0   105196
+18      7   236643      1   105214
+19      3   236700      0   105214
+20      5   236800      0   105214
+21      3   236863      0   105214
+22      0   236863      0   105214
+23      1   236886      0   105214
+24      0   236886      0   105214
+25      1   236911      0   105214
+
+
+## Final Sample stats summary
+        state  reads_raw  reads_passed_filter  clusters_total  clusters_hidepth  hetero_est  error_est  reads_consens  loci_in_assembly
+MKM_1       7   10261435             10241938          116581             98173    0.003557   0.000985          96618             85871
+MKM_11      7   11457610             11435216          103944             85391    0.003412   0.000963          84052             76582
+MKM_12      7   14129811             14100886          145038            122375    0.004716   0.001002         119886            106064
+MKM_13      7    2324241              2319496           43026             34593    0.001617   0.000852          34316             32131
+MKM_14      7    2848000              2842901           15919             12339    0.000932   0.000908          12286             11503
+MKM_15      7    3791952              3783787           67752             54517    0.002450   0.000887          53882             49315
+MKM_16      7    2857851              2852182           52167             42136    0.001879   0.000868          41783             38670
+MKM_17      7    4767517              4758503           28404             22468    0.001329   0.000912          22314             20764
+MKM_18      7    7032878              7018426           95576             78372    0.003343   0.000948          77179             70732
+MKM_2       7    5825010              5812494           82018             67620    0.002778   0.000970          66723             60423
+MKM_20      7   24010603             23962258          173611            146525    0.005865   0.001006         142823            122039
+MKM_23      7    1953230              1949461           34251             27339    0.001502   0.000897          27151             24758
+MKM_24      7    6552042              6539820           79135             64255    0.002838   0.000927          63400             57272
+MKM_25      7    1525462              1522593           30681             24537    0.001319   0.000867          24386             22352
+MKM_26      7    3684865              3677636           54009             43496    0.002060   0.000869          43068             39517
+MKM_3       7    1382097              1379329           23388             18593    0.001140   0.000861          18490             17017
+MKM_9       7    1069798              1067688           18462             14693    0.001020   0.000878          14628             13567
+
+
+## Alignment matrix statistics:
+snps matrix size: (18, 236911), 59.61% missing sites.
+sequence matrix size: (18, 12317738), 61.94% missing sites.

@@ -1,0 +1,120 @@
+
+## The number of loci caught by each filter.
+## ipyrad API location: [assembly].stats_dfs.s7_filters
+
+                            total_filters  applied_order  retained_loci
+total_prefiltered_loci                  0              0         152068
+filtered_by_rm_duplicates            2967           2967         149101
+filtered_by_max_indels                430            430         148671
+filtered_by_max_SNPs                   63             61         148610
+filtered_by_max_shared_het           3528           3521         145089
+filtered_by_min_sample              37675          37520         107569
+total_filtered_loci                 44663          44499         107569
+
+
+## The number of loci recovered for each Sample.
+## ipyrad API location: [assembly].stats_dfs.s7_samples
+
+              sample_coverage
+MKM01_teop              66142
+MKM02_teop              49499
+MKM03_teop              15490
+MKM09_teop              12331
+MKM11_yale              60897
+MKM12_huit              78371
+MKM13_huit              28186
+MKM14_huit              10524
+MKM15_huit              41440
+MKM16_huit              33221
+MKM17_huit              18748
+MKM18_huit              56650
+MKM20_huit              86727
+MKM23_moxv              22070
+MKM24_moxv              47226
+MKM25_moxv              20048
+MKM26_moxv              34118
+PWS3186_hart            64281
+PWS3190_hart            64435
+PWS3193_hart            43789
+
+
+## The number of loci for which N taxa have data.
+## ipyrad API location: [assembly].stats_dfs.s7_loci
+
+    locus_coverage  sum_coverage
+1                0             0
+2                0             0
+3                0             0
+4            12720         12720
+5            12931         25651
+6            13445         39096
+7            13392         52488
+8            12812         65300
+9            11201         76501
+10            9781         86282
+11            7681         93963
+12            5825         99788
+13            3745        103533
+14            2224        105757
+15            1060        106817
+16             378        107195
+17             124        107319
+18              31        107350
+19              77        107427
+20             142        107569
+
+
+The distribution of SNPs (var and pis) per locus.
+## var = Number of loci with n variable sites (pis + autapomorphies)
+## pis = Number of loci with n parsimony informative site (minor allele in >1 sample)
+## ipyrad API location: [assembly].stats_dfs.s7_snps
+## The "reference" sample is included if present unless 'exclude_reference=True'
+
+      var  sum_var    pis  sum_pis
+0   19640        0  43042        0
+1   20490    20490  21215    21215
+2   16586    53662  13648    48511
+3   12749    91909  10493    79990
+4   11071   136193   8810   115230
+5    8750   179943   4892   139690
+6    6408   218391   2818   156598
+7    4497   249870   1538   167364
+8    3088   274574    730   173204
+9    1803   290801    249   175445
+10   1049   301291     78   176225
+11    641   308342     33   176588
+12    342   312446     10   176708
+13    191   314929      7   176799
+14    119   316595      4   176855
+15     70   317645      0   176855
+16     48   318413      2   176887
+17     27   318872      0   176887
+
+
+## Final Sample stats summary
+              state  reads_raw  reads_passed_filter  clusters_total  clusters_hidepth  hetero_est  error_est  reads_consens  loci_in_assembly
+MKM01_teop        7   10261435             10241938          135238            102190    0.010284   0.001124          95682             66142
+MKM02_teop        7    5825010              5812494           90089             67957    0.008403   0.001154          64296             49499
+MKM03_teop        7    1382097              1379329           30309             23596    0.003064   0.001083          23164             15490
+MKM09_teop        7    1069798              1067688           22382             17499    0.002926   0.001082          17195             12331
+MKM11_yale        7   11457610             11435216          200516            159142    0.005796   0.001157         153448             60897
+MKM12_huit        7   14129811             14100886          156142            110340    0.014208   0.001226         100313             78371
+MKM13_huit        7    2324241              2319496           46642             36424    0.005256   0.001094          35285             28186
+MKM14_huit        7    2848000              2842901           64501             52372    0.001170   0.001101          51992             10524
+MKM15_huit        7    3791952              3783787           70455             53179    0.007687   0.001182          50606             41440
+MKM16_huit        7    2857851              2852182           53769             41667    0.006363   0.001083          40075             33221
+MKM17_huit        7    4767517              4758503           98808             80639    0.001647   0.001099          79670             18748
+MKM18_huit        7    7032878              7018426          105994             79446    0.009075   0.001166          74748             56650
+MKM20_huit        7   24010603             23962258          205862            130252    0.016935   0.001152         115536             86727
+MKM23_moxv        7    1953230              1949461           41786             32900    0.003925   0.001110          32074             22070
+MKM24_moxv        7    6552042              6539820          116596             90230    0.006222   0.001138          86686             47226
+MKM25_moxv        7    1525462              1522593           33496             26361    0.003696   0.001057          25734             20048
+MKM26_moxv        7    3684865              3677636           70821             55535    0.004644   0.001085          53922             34118
+PWS3186_hart      7    4555892              4554992          149654            118035    0.009457   0.001998         109976             64281
+PWS3190_hart      7    4866200              4864348          132378            101276    0.010974   0.002329          93227             64435
+PWS3193_hart      7    2771536              2770449           84076             63725    0.007117   0.002250          60224             43789
+
+
+## Alignment matrix statistics:
+snps matrix size: (20, 318872), 58.09% missing sites.
+sequence matrix size: (20, 9267950), 60.45% missing sites.
