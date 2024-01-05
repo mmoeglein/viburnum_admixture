@@ -1,0 +1,222 @@
+#starting with hybrids.vcf from reference-mapped ipyrad assembly
+#filtering .vcf and specifying number of missing samples allowed per locus before beagle input 
+#following filtering recommendations from https://github.com/johanzi/gwas_gemma
+srun --pty -t 0-6:00 --mem 12G -p interactive bash
+module load VCFtools
+module load BCFtools/1.5-foss-2016b
+#filter for biallelic loci
+bcftools view --min-ac=1 --max-alleles 2  hybrids.vcf > hybrids_biallelic_only_alt.vcf
+#filter for quality and indels
+vcftools --vcf hybrids_biallelic_only_alt.vcf  --minDP 3 --minGQ 25 --remove-indels --recode --recode-INFO-all --out hybrids_biallelic_only_alt_DP3_GQ25.vcf
+#use vcftools to filter for missingness, looking for 20% present/80% missing with 119 samples -> 95.2 = 95 max missing
+vcftools --vcf hybrids_biallelic_only_alt_DP3_GQ25.vcf.recode.vcf --max-missing-count 95 --recode --recode-INFO-all --out hybrids_biallelic_only_alt_DP3_GQ25_20_present.vcf
+#After filtering, kept 55880 out of a possible 698983 Sites
+#make a copy of hybrids_biallelic_only_alt_DP3_GQ25_20_present.vcf.recode.vcf and remove header so it's easier to index, copy header back after filtering
+cp hybrids_biallelic_only_alt_DP3_GQ25_20_present.vcf.recode.vcf hybrids_20_to_edit.vcf
+#get rid of header on hybrids_20_to_edit.vcf
+nano hybrids_20_to_edit.vcf
+#awk to get rid of singleton scaffolds (lost about 180 singleton scaffolds)
+awk 'NR==FNR{a[$1]++;next}a[$1]>1' FS='\t' hybrids_20_to_edit.vcf hybrids_20_to_edit.vcf > hybrids_20_singletons_filtered.vcf
+#add header from hybrids_biallelic_only_alt_DP3_GQ25_20_present.vcf.recode.vcf back on to hybrids_20_singletons_filtered.vcf
+#save header from hybrids_biallelic_only_alt_DP3_GQ25_20_present.vcf.recode.vcf
+grep "#" hybrids_biallelic_only_alt_DP3_GQ25_20_present.vcf.recode.vcf > vcf_header.txt
+#put vcf_header.txt on top of hybrids_20_singletons_filtered.vcf and save output
+cat vcf_header.txt hybrids_20_singletons_filtered.vcf > hybrids_20_for_beagle.vcf
+
+#impute missing loci with beagle using hybrids_20_for_beagle.vcf generated previously
+module load miniconda
+conda activate imputation_12_20
+#start interactive job
+srun --pty -t 0-6:00 --mem 12G -p interactive bash
+#run beagle with 12G
+beagle -Xmx12g gt=hybrids_20_for_beagle.vcf out=hybrids_impute_20.vcf
+#beagle gets stuck on scaffolds with few markers that are far apart
+#ctrl+z to stop job and then delete scaffold that's causing problems
+#scaffolds beagle got stuck on that had to be deleted:
+#Window 84 (contig15897:640590-833033) #out -> no1
+#command to iterate deleting scaffolds and rerunning beagle
+grep -v "contig15897" hybrids_20_for_beagle.vcf > hybrids_20_for_beagle_no1.vcf 
+beagle gt=hybrids_20_for_beagle_no1.vcf out=hybrids_impute_20.vcf
+#imputation complete, part of output
+#Cumulative Statistics:
+#Study markers:          55,698
+
+#unzip beagle output and run plink to generate gemma input files
+gunzip hybrids_impute_20.vcf.vcf.gz
+module load PLINK/1.90-beta5.3
+plink --vcf hybrids_impute_20.vcf.vcf --allow-extra-chr --out hybrids_impute_20
+#combine .fam output from plink with phenotype.tsv containing traits for gemma
+cut -f1,2,3,4,5 hybrids_impute_20.fam > hybrids_impute_20_modified.fam
+paste hybrids_impute_20_modified.fam phenotype.tsv > hybrids_impute_20.fam
+
+###gemma using i20 beagle output
+##continuous traits: blade area, length/width, abaxial and adaxial trichome density, number of marginal teeth
+#gemma for blade area
+module load GEMMA
+#make relatedness matrix
+gemma -bfile hybrids_impute_20 -gk 1 -o hybrids_impute_20
+## number of total SNPs/var        =    55698
+## number of analyzed SNPs         =    32206
+gemma -bfile hybrids_impute_20 -k /home/mm3465/scratch60/gemma/gemma_impute_20/output/hybrids_impute_20.cXX.txt -lmm 2 -maf 0.01 -o phenotype
+## number of total SNPs/var        =    55698
+## number of analyzed SNPs         =    32206
+#use python script to reformat gemma output for qqman plotting
+#this python script is from https://github.com/johanzi/gwas_gemma (assoc2qqman.py) and modified by me to select the correct columns (assoc2qqman_fixed.py)
+module unload GEMMA
+module load Python
+#modify phenotype.assoc.txt$chr to get rid of 'contig' before number
+sed 's/contig//g' output/phenotype.assoc.txt > output/phenotype.assoc_rename_contig.txt
+python assoc2qqman_fixed.py output/phenotype.assoc_rename_contig.txt > output/phenotype.assoc_rename_contig.qqman20.txt
+#download and run qqman locally in R
+rsync -av mm3465@farnam.hpc.yale.edu:/home/mm3465/scratch60/gemma/gemma_impute_20/output/phenotype.assoc_rename_contig.qqman20.txt ~/Desktop/gemma_output
+#run gemma with other continuous traits using 20% present/80% imputed data
+#make separate directories for each trait in /home/mm3465/scratch60/gemma
+mkdir gemma_i20_teeth
+mkdir gemma_i20_trichab
+mkdir gemma_i20_trichad
+mkdir gemma_i20_low
+#copy plink and python files into each directory
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/hybrids_impute_20.bim  /home/mm3465/scratch60/gemma/gemma_i20_low
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/hybrids_impute_20_modified.fam /home/mm3465/scratch60/gemma/gemma_i20_low
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/hybrids_impute_20.bed /home/mm3465/scratch60/gemma/gemma_i20_low
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/assoc2qqman_fixed.py /home/mm3465/scratch60/gemma/gemma_i20_low
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/hybrids_impute_20.bim  /home/mm3465/scratch60/gemma/gemma_i20_teeth
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/hybrids_impute_20_modified.fam /home/mm3465/scratch60/gemma/gemma_i20_teeth
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/hybrids_impute_20.bed /home/mm3465/scratch60/gemma/gemma_i20_teeth
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/assoc2qqman_fixed.py /home/mm3465/scratch60/gemma/gemma_i20_teeth
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/hybrids_impute_20.bim  /home/mm3465/scratch60/gemma/gemma_i20_trichab
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/hybrids_impute_20_modified.fam /home/mm3465/scratch60/gemma/gemma_i20_trichab
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/hybrids_impute_20.bed /home/mm3465/scratch60/gemma/gemma_i20_trichab
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/assoc2qqman_fixed.py /home/mm3465/scratch60/gemma/gemma_i20_trichab
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/hybrids_impute_20.bim  /home/mm3465/scratch60/gemma/gemma_i20_trichad
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/hybrids_impute_20_modified.fam /home/mm3465/scratch60/gemma/gemma_i20_trichad
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/hybrids_impute_20.bed /home/mm3465/scratch60/gemma/gemma_i20_trichad
+cp /home/mm3465/scratch60/gemma/gemma_impute_20/assoc2qqman_fixed.py /home/mm3465/scratch60/gemma/gemma_i20_trichad
+#start with gemma_i20_low (length over width)
+#make phenotype file, data copied from desktop file traits_for_gemma, already in right order
+nano low_phenotype.tsv
+#from /home/mm3465/scratch60/gemma/gemma_i20_low
+#start interactive job
+srun --pty -t 0-6:00 --mem 12G -p interactive bash
+#make .fam file specific to trait
+paste hybrids_impute_20_modified.fam low_phenotype.tsv > hybrids_impute_20.fam
+#load gemma, calculate relatedness matrix (should be the same across runs), run association tests
+module load GEMMA
+gemma -bfile hybrids_impute_20 -gk 1 -o hybrids_impute_20
+gemma -bfile hybrids_impute_20 -k /home/mm3465/scratch60/gemma/gemma_i20_low/output/hybrids_impute_20.cXX.txt -lmm 2 -maf 0.01 -o phenotype
+
+#teeth: /home/mm3465/scratch60/gemma/gemma_i20_teeth
+nano teeth_phenotype.tsv
+paste hybrids_impute_20_modified.fam teeth_phenotype.tsv > hybrids_impute_20.fam
+gemma -bfile hybrids_impute_20 -gk 1 -o hybrids_impute_20
+gemma -bfile hybrids_impute_20 -k /home/mm3465/scratch60/gemma/gemma_i20_teeth/output/hybrids_impute_20.cXX.txt -lmm 2 -maf 0.01 -o phenotype
+
+#trichab: /home/mm3465/scratch60/gemma/gemma_i20_trichab
+nano trichab_phenotype.tsv
+paste hybrids_impute_20_modified.fam trichab_phenotype.tsv > hybrids_impute_20.fam
+gemma -bfile hybrids_impute_20 -gk 1 -o hybrids_impute_20
+gemma -bfile hybrids_impute_20 -k /home/mm3465/scratch60/gemma/gemma_i20_trichab/output/hybrids_impute_20.cXX.txt -lmm 2 -maf 0.01 -o phenotype
+
+#trichad: /home/mm3465/scratch60/gemma/gemma_i20_trichad
+nano trichad_phenotype.tsv
+paste hybrids_impute_20_modified.fam trichad_phenotype.tsv > hybrids_impute_20.fam
+gemma -bfile hybrids_impute_20 -gk 1 -o hybrids_impute_20
+gemma -bfile hybrids_impute_20 -k /home/mm3465/scratch60/gemma/gemma_i20_trichad/output/hybrids_impute_20.cXX.txt -lmm 2 -maf 0.01 -o phenotype
+
+#now go back to each trait directory and run assoc2qqman_fixed.py: low, teeth, trichab, trichad
+module unload GEMMA
+module load Python
+cd /home/mm3465/scratch60/gemma/gemma_i20_low
+cd /home/mm3465/scratch60/gemma/gemma_i20_teeth
+cd /home/mm3465/scratch60/gemma/gemma_i20_trichab
+cd /home/mm3465/scratch60/gemma/gemma_i20_trichad
+#modify phenotype.assoc.txt$chr to get rid of 'contig' before number
+sed 's/contig//g' output/phenotype.assoc.txt > output/phenotype.assoc_rename_contig.txt
+python assoc2qqman_fixed.py output/phenotype.assoc_rename_contig.txt > output/trichad.assoc_rename_contig.qqman20.txt
+#download *.assoc_rename_contig.qqman20.txt for each trait
+rsync -av mm3465@farnam.hpc.yale.edu:/home/mm3465/scratch60/gemma/gemma_i20_low/output/low.assoc_rename_contig.qqman20.txt ~/Desktop/gemma_output
+rsync -av mm3465@farnam.hpc.yale.edu:/home/mm3465/scratch60/gemma/gemma_i20_teeth/output/teeth.assoc_rename_contig.qqman20.txt ~/Desktop/gemma_output
+rsync -av mm3465@farnam.hpc.yale.edu:/home/mm3465/scratch60/gemma/gemma_i20_trichab/output/trichab.assoc_rename_contig.qqman20.txt ~/Desktop/gemma_output
+rsync -av mm3465@farnam.hpc.yale.edu:/home/mm3465/scratch60/gemma/gemma_i20_trichad/output/trichad.assoc_rename_contig.qqman20.txt ~/Desktop/gemma_output
+
+##binary trichome branching traits
+#running gemma on trichome branching classes in scratch60/gemma
+#made trait files as binary to be compatible: branching or not (ignores the glabrous versus single/bifid dichotomy, there aren't as many instances of each)
+#I also trust the call on branched versus not more than I trust the call on glabrous versus not
+#traits: abaxial lamina (ab_branch), adaxial lamina (ad_branch), veins (vein_branch), margins (margin_branch) 1=stellate 0=glabrous/single/bifid
+#make a directory with all the starting files needed
+mkdir gemma_i20_ebt #(everything but traits, assoc2qqman_fixed.py  hybrids_impute_20.bed  hybrids_impute_20.bim  hybrids_impute_20_modified.fam)
+#from /home/mm3465/scratch60/gemma/gemma_i20_low
+cp assoc2qqman_fixed.py /home/mm3465/scratch60/gemma/gemma_i20_ebt
+cp hybrids_impute_20.bed /home/mm3465/scratch60/gemma/gemma_i20_ebt  
+cp hybrids_impute_20.bim /home/mm3465/scratch60/gemma/gemma_i20_ebt  
+cp hybrids_impute_20_modified.fam /home/mm3465/scratch60/gemma/gemma_i20_ebt
+#copy gemma_i20_ebt contents into new directories for trichome traits in scratch60/gemma
+mkdir gemma_i20_ab_branch
+mkdir gemma_i20_ad_branch
+mkdir gemma_i20_vein_branch
+mkdir gemma_i20_margin_branch
+cp -R /home/mm3465/scratch60/gemma/gemma_i20_ebt/* /home/mm3465/scratch60/gemma/gemma_i20_ab_branch
+cp -R /home/mm3465/scratch60/gemma/gemma_i20_ebt/* /home/mm3465/scratch60/gemma/gemma_i20_ad_branch
+cp -R /home/mm3465/scratch60/gemma/gemma_i20_ebt/* /home/mm3465/scratch60/gemma/gemma_i20_vein_branch
+cp -R /home/mm3465/scratch60/gemma/gemma_i20_ebt/* /home/mm3465/scratch60/gemma/gemma_i20_margin_branch
+#put corresponding traits in each folder (copied from desktop files) as *_phenotype.tsv, single column trait values already correctly ordered
+#in each respective directory
+nano ab_branch_phenotype.tsv
+nano ad_branch_phenotype.tsv
+nano vein_branch_phenotype.tsv
+nano margin_branch_phenotype.tsv
+#for each trait, combine modifed.fam with trait to make .fam input for gemma
+#in each respective directory
+paste hybrids_impute_20_modified.fam ab_branch_phenotype.tsv > hybrids_impute_20.fam
+paste hybrids_impute_20_modified.fam ad_branch_phenotype.tsv > hybrids_impute_20.fam
+paste hybrids_impute_20_modified.fam vein_branch_phenotype.tsv > hybrids_impute_20.fam
+paste hybrids_impute_20_modified.fam margin_branch_phenotype.tsv > hybrids_impute_20.fam
+#running gemma with ab_branch first
+#start interactive job
+srun --pty -t 0-6:00 --mem 12G -p interactive bash 
+module load GEMMA 
+#modified commands to run linear model for binary traits
+#computes relatedness matrix
+gemma -bfile hybrids_impute_20 -gk 1 -o hybrids_impute_20 
+gemma -bfile hybrids_impute_20 -k /home/mm3465/scratch60/gemma/gemma_impute_20/output/hybrids_impute_20.cXX.txt -lmm 2 -maf 0.01 -o phenotype
+#modified commands for linear model, just changed -lmm -> -lm for linear mode in second command
+#kept option 2 for -lm (likelihood ratio test) 
+#from /home/mm3465/scratch60/gemma/gemma_i20_ab_branch
+gemma -bfile hybrids_impute_20 -gk 1 -o hybrids_impute_20 
+#number of total SNPs/var=55698 number of analyzed SNPs=31515
+gemma -bfile hybrids_impute_20 -k /home/mm3465/scratch60/gemma/gemma_i20_ab_branch/output/hybrids_impute_20.cXX.txt -lm 2 -maf 0.01 -o phenotype
+#appears to work for both commands, produces an output likelihood for each snp association based on linear model
+#again for other traits in their respective directories
+gemma -bfile hybrids_impute_20 -gk 1 -o hybrids_impute_20 #number of total SNPs/var=55698 number of analyzed SNPs=31515
+gemma -bfile hybrids_impute_20 -k /home/mm3465/scratch60/gemma/gemma_i20_ad_branch/output/hybrids_impute_20.cXX.txt -lm 2 -maf 0.01 -o phenotype
+gemma -bfile hybrids_impute_20 -gk 1 -o hybrids_impute_20 #number of total SNPs/var=55698 number of analyzed SNPs=31515
+gemma -bfile hybrids_impute_20 -k /home/mm3465/scratch60/gemma/gemma_i20_vein_branch/output/hybrids_impute_20.cXX.txt -lm 2 -maf 0.01 -o phenotype
+gemma -bfile hybrids_impute_20 -gk 1 -o hybrids_impute_20 #number of total SNPs/var=55698 number of analyzed SNPs=31515
+gemma -bfile hybrids_impute_20 -k /home/mm3465/scratch60/gemma/gemma_i20_margin_branch/output/hybrids_impute_20.cXX.txt -lm 2 -maf 0.01 -o phenotype
+#modify output using python script so that scaffolds are read as chromosomes downstream
+#switch to python, still on interact node
+module unload GEMMA
+module load Python
+#in each respective directory
+sed 's/contig//g' output/phenotype.assoc.txt > output/phenotype.assoc_rename_contig.txt 
+#worked, changed 'contig#' to '#'
+python assoc2qqman_fixed.py output/phenotype.assoc_rename_contig.txt > output/phenotype.assoc_rename_contig.qqman20.txt 
+#didn't work, -lm has slightly different output than -lmm, modify script to change column sorting
+#modifying assoc2qqman_fixed.py for -lm model/binary traits
+#for continuous traits: script turns 0-9 into 1,0,2,9,7, 
+#for binary traits: turn 0-8 into 1,0,2,8,7 (p_lrt is what's used in plots, throw in column 7 to fill space)-> just turn 9 into 8 in the script
+#try again after modified assoc2qqman_fixed.py script
+python assoc2qqman_fixed.py output/phenotype.assoc_rename_contig.txt > output/ab_branch_phenotype.assoc_rename_contig.qqman20.txt 
+#again with other traits in their respective directories, fix python script 9->8 in each
+sed 's/contig//g' output/phenotype.assoc.txt > output/phenotype.assoc_rename_contig.txt
+python assoc2qqman_fixed.py output/phenotype.assoc_rename_contig.txt > output/ad_branch_phenotype.assoc_rename_contig.qqman20.txt 
+sed 's/contig//g' output/phenotype.assoc.txt > output/phenotype.assoc_rename_contig.txt
+python assoc2qqman_fixed.py output/phenotype.assoc_rename_contig.txt > output/vein_branch_phenotype.assoc_rename_contig.qqman20.txt 
+sed 's/contig//g' output/phenotype.assoc.txt > output/phenotype.assoc_rename_contig.txt
+python assoc2qqman_fixed.py output/phenotype.assoc_rename_contig.txt > output/margin_branch_phenotype.assoc_rename_contig.qqman20.txt 
+#download all *_phenotype.assoc_rename_contig.qqman20.txt files into a new desktop folder /binary_trait_gemma -> plot with R studio
+rsync -av mm3465@farnam.hpc.yale.edu:/home/mm3465/scratch60/gemma/gemma_i20_ab_branch/output/ab_branch_phenotype.assoc_rename_contig.qqman20.txt ~/Desktop/binary_trait_gemma
+rsync -av mm3465@farnam.hpc.yale.edu:/home/mm3465/scratch60/gemma/gemma_i20_ad_branch/output/ad_branch_phenotype.assoc_rename_contig.qqman20.txt ~/Desktop/binary_trait_gemma
+rsync -av mm3465@farnam.hpc.yale.edu:/home/mm3465/scratch60/gemma/gemma_i20_vein_branch/output/vein_branch_phenotype.assoc_rename_contig.qqman20.txt ~/Desktop/binary_trait_gemma
+rsync -av mm3465@farnam.hpc.yale.edu:/home/mm3465/scratch60/gemma/gemma_i20_margin_branch/output/margin_branch_phenotype.assoc_rename_contig.qqman20.txt ~/Desktop/binary_trait_gemma
